@@ -313,3 +313,5 @@ export const LiveOscilloscope: React.FC<LiveOscilloscopeProps> = ({
     </div>
   );
 };
+
+export const CRTVisualizer = LiveOscilloscope;

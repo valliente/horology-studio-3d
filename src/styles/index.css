@@ -4,50 +4,50 @@
 
 @layer base {
   body {
-    background-color: #0d0f14;
+    background-color: #0D0E12;
     color: #f1f5f9;
   }
 }
 
-/* Custom Pro Scrollbars */
+/* Custom Enterprise Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d0f14;
+  background: #0D0E12;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e2430;
+  background: #1B1E28;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00f5d4;
+  background: #00F5D4;
 }
 
-/* Glow Utilities */
+/* Glow Classes */
 .text-glow-cyan {
-  text-shadow: 0 0 10px rgba(0, 245, 212, 0.6), 0 0 20px rgba(0, 245, 212, 0.3);
+  text-shadow: 0 0 12px rgba(0, 245, 212, 0.6), 0 0 24px rgba(0, 245, 212, 0.3);
 }
 .text-glow-purple {
-  text-shadow: 0 0 10px rgba(157, 78, 221, 0.6), 0 0 20px rgba(157, 78, 221, 0.3);
+  text-shadow: 0 0 12px rgba(157, 78, 221, 0.6), 0 0 24px rgba(157, 78, 221, 0.3);
 }
 .text-glow-blue {
-  text-shadow: 0 0 10px rgba(59, 130, 246, 0.6), 0 0 20px rgba(59, 130, 246, 0.3);
+  text-shadow: 0 0 12px rgba(59, 130, 246, 0.6), 0 0 24px rgba(59, 130, 246, 0.3);
 }
 
 /* CRT Visualizer Scanlines */
-.crt-grid-pro {
-  background-size: 32px 32px;
+.crt-grid-ent {
+  background-size: 36px 36px;
   background-image: 
     linear-gradient(to right, rgba(0, 245, 212, 0.04) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 245, 212, 0.04) 1px, transparent 1px);
 }
 
-.crt-scanline-pro {
+.crt-scanline-ent {
   background: linear-gradient(
-    rgba(13, 15, 20, 0) 50%, 
-    rgba(0, 0, 0, 0.2) 50%
+    rgba(13, 14, 18, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
   );
   background-size: 100% 4px;
   pointer-events: none;
@@ -65,17 +65,17 @@ input[type=range]::-webkit-slider-runnable-track {
   width: 100%;
   height: 6px;
   cursor: pointer;
-  background: #1e2430;
+  background: #1B1E28;
   border-radius: 3px;
-  border: 1px solid #242b3b;
+  border: 1px solid #222630;
 }
 input[type=range]::-webkit-slider-thumb {
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  background: #00f5d4;
+  background: #00F5D4;
   cursor: pointer;
   -webkit-appearance: none;
   margin-top: -5px;
-  box-shadow: 0 0 10px #00f5d4;
+  box-shadow: 0 0 10px #00F5D4;
 }
