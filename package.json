@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:exe": "node build-exe.js",
     "preview": "vite preview"
   },
   "dependencies": {
