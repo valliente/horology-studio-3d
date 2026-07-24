@@ -1,51 +1,81 @@
-# Micro-Timegrapher Studio Pro ⏱️⚡
+# ⏱️ Micro-Timegrapher Studio Pro v1.0
 
-> **Native Rust/Tauri Enterprise Mechanical Watch Diagnostic Workstation**
+![GitHub stars](https://img.shields.io/github/stars/valliente/micro-timegrapher?style=for-the-badge&color=00F5D4)
+![GitHub releases](https://img.shields.io/github/v/release/valliente/micro-timegrapher?style=for-the-badge&color=9D4EDD)
+![License](https://img.shields.io/github/license/valliente/micro-timegrapher?style=for-the-badge&color=3B82F6)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Web%20%7C%20PWA-00F5D4?style=for-the-badge)
 
-Micro-Timegrapher Studio Pro is a heavy-duty, multi-megabyte native desktop horology workstation built on a **Rust + Tauri** native backend and a high-performance **React + TypeScript + WebAudio WASM** DSP frontend. Designed for professional watchmakers, horologists, and quality control labs, it provides 192 kHz acoustic sampling, high-pass/low-pass biquad DSP filtering, autocorrelation signal processing, SQLite database persistence, 10-second WAV telemetry clip archiving, 6-positional polar radar plotting, and client PDF report generation.
+> **Enterprise Acoustic Mechanical Watch Diagnostic Workstation & Signal Autocorrelation Engine**
 
----
-
-## 🌟 The Studio Pro Feature Suite
-
-1. **Pixel-Perfect Reference UI Alignment (`ac6597f9ca9857740d4b2b5ee17ddc45.jpg`)**
-   - **Left Navigation Bar**: User profile card ("Horology Lab - Master Tech"), custom Lucide line icons (`Home`, `Timegrapher`, `Multi-Positional`, `Watch Database`, `Reports`, `Settings`), and bottom logo branding.
-   - **Ultra-Dark Charcoal Palette**: Deep black background (`#0A0B0E`), dark grey cards (`#14161E`), 1px borders (`#222736`), Mint Cyan (`#00F5D4`), Deep Violet Purple (`#9D4EDD`), and glowing blue **PRO** badge (`#3B82F6`).
-
-2. **High-Precision Acoustic DSP & Autocorrelation Engine**
-   - Up to 192 kHz audio sampling with custom Biquad Bandpass Filter (2kHz–7kHz) targeting ruby jewel clicks.
-   - Signal autocorrelation $R(\tau) = \sum x(t) x(t+\tau)$ calculating exact VPH (18k to 36k), Rate Drift ($s/d$), Beat Error ($ms$), and Lift Angle Amplitude equation ($\text{Amplitude} = \frac{\text{Lift Angle}}{\pi \cdot f_0 \cdot t_1}$).
-
-3. **10-Second Raw WAV Audio Telemetry & Movement Database**
-   - Encodes 10-second raw `.wav` audio clips of escapement ticks via `WavEncoder.ts` and archives them inside the local database alongside movement specs (ETA 2824-2, Rolex 3135, Omega 8800, Grand Seiko 9S85).
-
-4. **Multi-Positional Diagnostic Suite & SVG Polar Radar Chart**
-   - Guided test wizard for 6 positions (DU, DD, CD, CU, CL, CR) with interactive SVG polar radar chart and delta calculations ($\Delta R_{max}$, $\Delta A_{max}$).
-
-5. **Client-Side PDF Service Certificate Compiler**
-   - Compiles formatted PDF Service Certificates featuring client info, movement metadata, positional matrices, and technician signatures.
-
-6. **Rust + Tauri Native Desktop Binary Build**
-   - Native Rust backend (`src-tauri/`) with IPC commands and native executable compilation scripts.
+[**🚀 Launch Live Web App**](https://valliente.github.io/micro-timegrapher/) • [**📥 Download Windows Executable**](https://github.com/valliente/micro-timegrapher/releases/tag/v1.0.0) • [**📖 Documentation**](#-key-features)
 
 ---
 
-## 🚀 Native Compilation & Build Commands
+## 🌟 Overview
 
+**Micro-Timegrapher Studio Pro** is an open-source, high-precision acoustic watch diagnostic platform. It listens to mechanical watch escapement ticks through any microphone or piezo pickup, computes real-time chronometric metrics via Web Audio autocorrelation DSP, and renders dual-mode CRT oscilloscope waveform and paper-tape dot drift visualizers.
+
+Strictly adhering to professional horological standards, it calculates **Rate Drift ($s/day$)**, **Beat Error ($ms$)**, and **Balance Wheel Amplitude ($\text{degrees}$)** using custom lift-angle algorithms ($44^\circ - 58^\circ$).
+
+---
+
+## ✨ Key Features
+
+- **⚡ WASM & Web Audio DSP Engine**: High-sample-rate signal processing (48kHz–96kHz) with dual-stage Biquad High-Pass and Low-Pass filters (2kHz–7kHz) targeting ruby jewel strikes.
+- **📈 Dual-Mode CRT Visualizers**: Phosphor-fade WebGL/Canvas renderer supporting paper-tape dot drift diagrams and high-speed audio waveform oscilloscopes.
+- **🎯 6-Positional Stability Suite & SVG Polar Radar Chart**: Full horological positional testing protocol (Dial Up, Dial Down, Crown Down, Crown Up, Crown Left, Crown Right) with interactive polar radar plots and positional delta calculations ($\Delta R_{max}$, $\Delta A_{max}$).
+- **💾 10-Second Raw WAV Telemetry Archiving**: Record 10-second raw `.wav` audio clips of escapement ticks and archive them inside local IndexedDB alongside movement specifications (ETA 2824-2, Rolex 3135, Omega 8800, Grand Seiko 9S85).
+- **📄 Client PDF Certificate Generator**: Generate printable chronometric service certificates with client details, movement metadata, positional breakdown matrices, and technician signatures.
+- **🛡️ Zero-AV False Positive Architecture**: Provided as an offline Progressive Web App (PWA), single-click `run_app.bat` runner, and standalone executable binary `MicroTimegrapherPro-Setup-1.0.0.exe`.
+
+---
+
+## 🎨 UI/UX Design System
+
+Adhering to dark dashboard design standards:
+- **Primary Accent**: Mint Cyan (`#00F5D4`)
+- **Secondary Accent**: Deep Purple (`#9D4EDD`)
+- **Background**: Deep Charcoal Black (`#0B0C10` / `#14161E`)
+- **PRO Badge**: Glowing Blue (`#3B82F6`)
+
+---
+
+## 🚀 Quick Start & Installation
+
+### Option 1: Standalone Runner (No Setup Required)
+1. Download the latest release from the [Releases Page](https://github.com/valliente/micro-timegrapher/releases/tag/v1.0.0).
+2. Double-click `run_app.bat` or launch `start.html` directly in your browser.
+
+### Option 2: Local Development
 ```bash
-# Run local development server
-cd H:\antigravity
+# Clone the repository
+git clone https://github.com/valliente/micro-timegrapher.git
+cd micro-timegrapher
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 
-# Build production bundle & executable
+# Build production bundle & standalone executable
 npm run build:exe
-
-# Compile native Tauri desktop package
-cargo tauri build
 ```
+
+---
+
+## 🤝 Contributing
+
+Contributions, bug reports, and feature requests are welcome! Feel free to check the [issues page](https://github.com/valliente/micro-timegrapher/issues).
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## 📜 License
 
-MIT License. Built with Google Antigravity Agentic AI.
+Distributed under the MIT License. See `LICENSE` for more information.
