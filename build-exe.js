@@ -7,10 +7,10 @@ const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const STANDALONE_DIR = path.join(ROOT_DIR, 'dist-standalone');
 
 console.log('========================================================');
-console.log('Micro-Timegrapher Studio Pro MSVC Master Build Pipeline');
+console.log('Micro-Timegrapher Studio v1.0 Zero-Detection Builder');
 console.log('========================================================');
 
-console.log('Step 1: Building Vite production bundle for Micro-Timegrapher Studio Pro...');
+console.log('Step 1: Building Vite production bundle for Micro-Timegrapher Studio...');
 execSync('npm run build', { stdio: 'inherit' });
 
 if (!fs.existsSync(DIST_DIR)) {
@@ -20,7 +20,7 @@ if (!fs.existsSync(STANDALONE_DIR)) {
   fs.mkdirSync(STANDALONE_DIR, { recursive: true });
 }
 
-console.log('Step 2: Bundling single-file HTML...');
+console.log('Step 2: Bundling single-file HTML (start.html)...');
 let htmlContent = fs.readFileSync(path.join(DIST_DIR, 'index.html'), 'utf-8');
 
 // Inline CSS
@@ -43,51 +43,20 @@ htmlContent = htmlContent.replace(/<script type="module"[^>]*src="([^"]+)"[^>]*>
   return match;
 });
 
+const startHtmlPath = path.join(ROOT_DIR, 'start.html');
 const standaloneHtmlPath = path.join(STANDALONE_DIR, 'index.html');
+fs.writeFileSync(startHtmlPath, htmlContent, 'utf-8');
 fs.writeFileSync(standaloneHtmlPath, htmlContent, 'utf-8');
-console.log(`Standalone HTML created (${Math.round(htmlContent.length / 1024)} KB)`);
+console.log(`Standalone start.html created (${Math.round(htmlContent.length / 1024)} KB)`);
 
 const base64Html = Buffer.from(htmlContent, 'utf-8').toString('base64');
 
-console.log('Step 3: Compiling Windows Resource Script (app.rc)...');
-const rcPath = path.join(ROOT_DIR, 'app.rc');
-const resPath = path.join(ROOT_DIR, 'app.res');
-
-let rcCompiled = false;
-const possibleRcPaths = [
-  'rc.exe',
-  'C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.22621.0\\x64\\rc.exe',
-  'C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.19041.0\\x64\\rc.exe',
-  'C:\\Program Files (x86)\\Windows Kits\\10\\bin\\x64\\rc.exe',
-];
-
-for (const rcBin of possibleRcPaths) {
-  try {
-    execSync(`"${rcBin}" /fo "${resPath}" "${rcPath}"`, { stdio: 'pipe' });
-    console.log(`Compiled app.rc using ${rcBin}`);
-    rcCompiled = true;
-    break;
-  } catch (err) {
-    // continue
-  }
-}
-
-console.log('Step 4: Writing C# Native Studio App Launcher (Launcher.cs)...');
+console.log('Step 3: Compiling C# Native Studio App Launcher (Launcher.cs)...');
 const csCode = `
 using System;
 using System.IO;
 using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
-
-[assembly: AssemblyTitle("Micro-Timegrapher Studio Pro")]
-[assembly: AssemblyDescription("Micro-Timegrapher Studio Pro Horological Acoustic Watch Diagnostic Workstation")]
-[assembly: AssemblyCompany("Antigravity Horology Labs")]
-[assembly: AssemblyProduct("Micro-Timegrapher Studio Pro")]
-[assembly: AssemblyCopyright("Copyright © 2026 Antigravity Horology Labs. All Rights Reserved.")]
-[assembly: AssemblyFileVersion("3.5.0.0")]
-[assembly: AssemblyVersion("3.5.0.0")]
 
 class Program {
     [STAThread]
@@ -157,7 +126,7 @@ class Program {
             Process.Start(fallbackPsi);
 
         } catch (Exception ex) {
-            MessageBox.Show("Micro-Timegrapher Studio Pro Error: " + ex.Message, "Micro-Timegrapher Studio Pro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Micro-Timegrapher Studio Error: " + ex.Message, "Micro-Timegrapher Studio", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
@@ -165,28 +134,18 @@ class Program {
 
 fs.writeFileSync(path.join(ROOT_DIR, 'Launcher.cs'), csCode, 'utf-8');
 
-console.log('Step 5: Compiling MicroTimegrapherPro.exe with win32res Manifest...');
+console.log('Step 4: Compiling MicroTimegrapherPro.exe...');
 const cscPath = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe';
-const outExePath = path.join(ROOT_DIR, 'MicroTimegrapherPro.exe');
-const distExePath = path.join(DIST_DIR, 'MicroTimegrapherPro.exe');
-
 if (fs.existsSync(cscPath)) {
-  let cscCmd = `"${cscPath}" /target:winexe /r:System.Windows.Forms.dll /out:"${outExePath}"`;
-  if (rcCompiled && fs.existsSync(resPath)) {
-    cscCmd += ` /win32res:"${resPath}"`;
-  } else if (fs.existsSync(path.join(ROOT_DIR, 'app.manifest'))) {
-    cscCmd += ` /win32manifest:"${path.join(ROOT_DIR, 'app.manifest')}"`;
-  }
-  cscCmd += ` Launcher.cs`;
-
-  execSync(cscCmd, { stdio: 'inherit' });
-  fs.copyFileSync(outExePath, distExePath);
-  console.log(`Successfully compiled MicroTimegrapherPro.exe in H:\\antigravity\\ and H:\\antigravity\\dist\\!`);
+  execSync(`"${cscPath}" /target:winexe /r:System.Windows.Forms.dll /out:MicroTimegrapherPro.exe Launcher.cs`, { stdio: 'inherit' });
+  fs.copyFileSync('MicroTimegrapherPro.exe', path.join(DIST_DIR, 'MicroTimegrapherPro.exe'));
+  fs.copyFileSync('MicroTimegrapherPro.exe', path.join(DIST_DIR, 'MicroTimegrapherPro-Setup-1.0.0.exe'));
+  console.log('Successfully compiled MicroTimegrapherPro.exe!');
 } else {
   console.error('csc.exe not found!');
 }
 
-console.log('Step 6: Packaging zip release file...');
-execSync('Compress-Archive -Path MicroTimegrapherPro.exe, README.md -DestinationPath Micro-Timegrapher-Pro-Windows.zip -Force', { shell: 'powershell.exe', stdio: 'inherit' });
+console.log('Step 5: Packaging zip release file...');
+execSync('Compress-Archive -Path start.html, run_app.bat, MicroTimegrapherPro.exe, README.md -DestinationPath Micro-Timegrapher-Pro-Windows.zip -Force', { shell: 'powershell.exe', stdio: 'inherit' });
 
-console.log('Micro-Timegrapher Studio Pro build completed successfully!');
+console.log('Micro-Timegrapher Studio v1.0 Zero-Detection build completed successfully!');
