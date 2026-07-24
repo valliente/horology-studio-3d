@@ -43,83 +43,86 @@ console.log(`Standalone HTML created (${Math.round(htmlContent.length / 1024)} K
 // Convert HTML to Base64 to safely embed into C# executable
 const base64Html = Buffer.from(htmlContent, 'utf-8').toString('base64');
 
-console.log('Step 3: Creating Standalone Native Windows App Launcher (Launcher.cs)...');
+console.log('Step 3: Writing Bulletproof C# Standalone App Launcher (Launcher.cs)...');
 const csCode = `
 using System;
 using System.IO;
-using System.Net;
-using System.Text;
 using System.Diagnostics;
-using System.Threading;
 using System.Windows.Forms;
 
 class Program {
-    static HttpListener listener;
-    static byte[] htmlBytes;
-
     [STAThread]
     static void Main() {
-        string base64Data = "${base64Html}";
-        htmlBytes = Convert.FromBase64String(base64Data);
+        try {
+            string base64Data = "${base64Html}";
+            byte[] htmlBytes = Convert.FromBase64String(base64Data);
 
-        int port = 42425;
-        bool started = false;
-
-        while (port < 42500 && !started) {
-            try {
-                listener = new HttpListener();
-                listener.Prefixes.Add("http://127.0.0.1:" + port + "/");
-                listener.Start();
-                started = true;
-            } catch {
-                port++;
+            // Write HTML to local Temp directory for 100% offline, firewall-free execution
+            string tempDir = Path.Combine(Path.GetTempPath(), "MicroTimegrapherApp");
+            if (!Directory.Exists(tempDir)) {
+                Directory.CreateDirectory(tempDir);
             }
-        }
 
-        if (!started) {
-            MessageBox.Show("Could not allocate a local port for Micro-Timegrapher.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return;
-        }
+            string htmlFilePath = Path.Combine(tempDir, "index.html");
+            File.WriteAllBytes(htmlFilePath, htmlBytes);
 
-        Thread serverThread = new Thread(() => {
-            while (listener.IsListening) {
+            string fileUri = "file:///" + htmlFilePath.Replace("\\\\", "/");
+            string profileDir = Path.Combine(tempDir, "Profile");
+
+            // Look for Microsoft Edge executable paths
+            string[] possibleEdgePaths = new string[] {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Microsoft\Edge\Application\msedge.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"Microsoft\Edge\Application\msedge.exe"),
+                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+                "msedge.exe"
+            };
+
+            string foundEdge = null;
+            foreach (string p in possibleEdgePaths) {
+                if (File.Exists(p) || p == "msedge.exe") {
+                    foundEdge = p;
+                    break;
+                }
+            }
+
+            // Look for Google Chrome executable paths
+            string[] possibleChromePaths = new string[] {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Google\Chrome\Application\chrome.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"Google\Chrome\Application\chrome.exe"),
+                "chrome.exe"
+            };
+
+            string foundChrome = null;
+            foreach (string p in possibleChromePaths) {
+                if (File.Exists(p) || p == "chrome.exe") {
+                    foundChrome = p;
+                    break;
+                }
+            }
+
+            string browserPath = foundEdge ?? foundChrome;
+
+            if (!string.IsNullOrEmpty(browserPath)) {
+                ProcessStartInfo psi = new ProcessStartInfo();
+                psi.FileName = browserPath;
+                psi.Arguments = "--user-data-dir=\\"" + profileDir + "\\" --app=\\"" + fileUri + "\\" --window-size=1280,820 --allow-file-access-from-files";
+                psi.UseShellExecute = true;
+
                 try {
-                    var context = listener.GetContext();
-                    context.Response.ContentType = "text/html; charset=utf-8";
-                    context.Response.ContentLength64 = htmlBytes.Length;
-                    context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-                    context.Response.OutputStream.Write(htmlBytes, 0, htmlBytes.Length);
-                    context.Response.OutputStream.Close();
+                    Process p = Process.Start(psi);
+                    if (p != null) return;
                 } catch {}
             }
-        });
-        serverThread.IsBackground = true;
-        serverThread.Start();
 
-        string appUrl = "http://127.0.0.1:" + port + "/";
-        string profileDir = Path.Combine(Path.GetTempPath(), "MicroTimegrapherProfile");
+            // Fallback: Open file directly using default OS file handler
+            ProcessStartInfo fallbackPsi = new ProcessStartInfo();
+            fallbackPsi.FileName = htmlFilePath;
+            fallbackPsi.UseShellExecute = true;
+            Process.Start(fallbackPsi);
 
-        // Force launch as a dedicated standalone window (no tabs, no URL bar, separate process profile)
-        ProcessStartInfo psi = new ProcessStartInfo();
-        psi.FileName = "msedge.exe";
-        psi.Arguments = "--user-data-dir=\\"" + profileDir + "\\" --app=\\"" + appUrl + "\\" --window-size=1300,850 --title=\\"Micro-Timegrapher\\"" ;
-        psi.UseShellExecute = true;
-
-        try {
-            Process p = Process.Start(psi);
-            if (p != null) {
-                p.WaitForExit();
-            }
-        } catch {
-            try {
-                psi.FileName = "chrome.exe";
-                Process p = Process.Start(psi);
-                if (p != null) p.WaitForExit();
-            } catch {
-                Process.Start(appUrl);
-            }
-        } finally {
-            try { listener.Stop(); } catch {}
+        } catch (Exception ex) {
+            MessageBox.Show("Micro-Timegrapher Error: " + ex.Message, "Micro-Timegrapher Launcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
@@ -127,11 +130,11 @@ class Program {
 
 fs.writeFileSync(path.join(ROOT_DIR, 'Launcher.cs'), csCode, 'utf-8');
 
-console.log('Step 4: Compiling native MicroTimegrapher.exe...');
+console.log('Step 4: Compiling bulletproof MicroTimegrapher.exe...');
 const cscPath = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe';
 if (fs.existsSync(cscPath)) {
   execSync(`"${cscPath}" /target:winexe /r:System.Windows.Forms.dll /out:MicroTimegrapher.exe Launcher.cs`, { stdio: 'inherit' });
-  console.log('Successfully compiled standalone MicroTimegrapher.exe!');
+  console.log('Successfully compiled MicroTimegrapher.exe!');
 } else {
   console.error('csc.exe not found!');
 }
@@ -139,4 +142,4 @@ if (fs.existsSync(cscPath)) {
 console.log('Step 5: Packaging zip release file...');
 execSync('Compress-Archive -Path MicroTimegrapher.exe, README.md -DestinationPath Micro-Timegrapher-Windows.zip -Force', { shell: 'powershell.exe', stdio: 'inherit' });
 
-console.log('Build process completed successfully!');
+console.log('Bulletproof build completed successfully!');
