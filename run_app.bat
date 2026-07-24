@@ -1,18 +1,17 @@
 @echo off
-echo Starting Micro-Timegrapher Studio v1.0 Zero-Detection App...
+title Micro-Timegrapher Studio Pro Launcher
+echo ========================================================
+echo Launching Micro-Timegrapher Studio Pro Workstation...
+echo ========================================================
 
-set EDGE_PATH="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-if not exist %EDGE_PATH% set EDGE_PATH="C:\Program Files\Microsoft\Edge\Application\msedge.exe"
+cd /d "%~dp0"
 
-set CHROME_PATH="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
-if not exist %CHROME_PATH% set CHROME_PATH="C:\Program Files\Google\Chrome\Application\chrome.exe"
-
-set HTML_PATH="%~dp0start.html"
-
-if exist %EDGE_PATH% (
-    start "" %EDGE_PATH% --app="file:///%~dp0start.html" --window-size=1400,900 --user-data-dir="%TEMP%\MicroTimegrapherProfile"
-) else if exist %CHROME_PATH% (
-    start "" %CHROME_PATH% --app="file:///%~dp0start.html" --window-size=1400,900 --user-data-dir="%TEMP%\MicroTimegrapherProfile"
+if exist "%~dp0dist\index.html" (
+    node server.js
 ) else (
-    start "" "%~dp0start.html"
+    echo Building production assets...
+    call npm run build
+    node server.js
 )
+
+pause
