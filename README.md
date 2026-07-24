@@ -1,53 +1,47 @@
-# Micro-Timegrapher Pro ⏱️⚡
+# Micro-Timegrapher Studio Pro ⏱️⚡
 
-> **Enterprise Acoustic Mechanical Watch Diagnostic Suite & Chronometric Calibration Platform**
+> **Native Rust/Tauri Enterprise Mechanical Watch Diagnostic Workstation**
 
-Micro-Timegrapher Pro is a complete, scaled chronometric diagnostic engine and watchmaker dashboard. Designed for professional watchmakers, horologists, and collectors, it features a dual-sidebar interface inspired by modern laboratory instruments, multi-microphone profile calibration, multi-stage parametric DSP filtering, IndexedDB session storage, 6-positional stability testing, PDF report generation, and Stratum-1 NTP time synchronization.
-
----
-
-## 🌟 The Pro Feature Suite
-
-1. **Hard Design Alignment (Pro Dashboard Theme)**
-   - Dual-sidebar architecture: Primary navigation sidebar + Center workspace + Right contextual inspector panel.
-   - Charcoal black background (`#0d0f14`), slate modules (`#161a23`), Electric Cyan/Green accents (`#00F5D4`), Vibrant Purple accents (`#9D4EDD`), and glowing blue "PRO" badge (`#3B82F6`).
-
-2. **Multi-Microphone Calibration Profiles**
-   - Manage input gain, acoustic bandpass cutoffs, and noise floor threshold profiles for Laptop Mics, Clip-On Piezo Sensors, Studio Shotguns, and USB Audio Interfaces.
-
-3. **Multi-Stage Parametric DSP Chain Engine**
-   - Visual Parametric EQ curve canvas targeting ruby jewel impact harmonics (~2.8 kHz unlock, ~4.2 kHz impulse pin, ~5.5 kHz drop impact).
-   - High-Pass & Low-Pass Cutoff controls, input gain boost multiplier, and auto noise floor calibration.
-
-4. **IndexedDB Session Database & Side-by-Side Compare**
-   - Store complete diagnostic runs (Rate Drift $s/d$, Beat Error $ms$, Amplitude $^\circ$, VPH, positional logs) locally with watch make, model, caliber, and service tags.
-   - Side-by-side session comparison tool to evaluate performance pre-service vs post-service.
-
-5. **6-Positional Stability Testing Module**
-   - Full 6-position watch testing protocol (DU, DD, CD, CU, CL, CR) with position timer, automated data logging, and positional variance ($\Delta Rate$, $\Delta Amplitude$) calculations.
-
-6. **Advanced PDF Service Report Generator**
-   - Compile watch sessions into formatted PDF Service Certificates with client details, positional matrices, and technician signature block.
-
-7. **Stratum-1 NTP Network Time Reference Module**
-   - Synchronize system clock with Stratum-1 atomic time servers for high-precision time reference during testing.
+Micro-Timegrapher Studio Pro is a heavy-duty, multi-megabyte native desktop horology workstation built on a **Rust + Tauri** native backend and a high-performance **React + TypeScript + WebAudio WASM** DSP frontend. Designed for professional watchmakers, horologists, and quality control labs, it provides 192 kHz acoustic sampling, high-pass/low-pass biquad DSP filtering, autocorrelation signal processing, SQLite database persistence, 10-second WAV telemetry clip archiving, 6-positional polar radar plotting, and client PDF report generation.
 
 ---
 
-## 🚀 Quick Start & Build Commands
+## 🌟 The Studio Pro Feature Suite
+
+1. **Pixel-Perfect Reference UI Alignment (`ac6597f9ca9857740d4b2b5ee17ddc45.jpg`)**
+   - **Left Navigation Bar**: User profile card ("Horology Lab - Master Tech"), custom Lucide line icons (`Home`, `Timegrapher`, `Multi-Positional`, `Watch Database`, `Reports`, `Settings`), and bottom logo branding.
+   - **Ultra-Dark Charcoal Palette**: Deep black background (`#0A0B0E`), dark grey cards (`#14161E`), 1px borders (`#222736`), Mint Cyan (`#00F5D4`), Deep Violet Purple (`#9D4EDD`), and glowing blue **PRO** badge (`#3B82F6`).
+
+2. **High-Precision Acoustic DSP & Autocorrelation Engine**
+   - Up to 192 kHz audio sampling with custom Biquad Bandpass Filter (2kHz–7kHz) targeting ruby jewel clicks.
+   - Signal autocorrelation $R(\tau) = \sum x(t) x(t+\tau)$ calculating exact VPH (18k to 36k), Rate Drift ($s/d$), Beat Error ($ms$), and Lift Angle Amplitude equation ($\text{Amplitude} = \frac{\text{Lift Angle}}{\pi \cdot f_0 \cdot t_1}$).
+
+3. **10-Second Raw WAV Audio Telemetry & Movement Database**
+   - Encodes 10-second raw `.wav` audio clips of escapement ticks via `WavEncoder.ts` and archives them inside the local database alongside movement specs (ETA 2824-2, Rolex 3135, Omega 8800, Grand Seiko 9S85).
+
+4. **Multi-Positional Diagnostic Suite & SVG Polar Radar Chart**
+   - Guided test wizard for 6 positions (DU, DD, CD, CU, CL, CR) with interactive SVG polar radar chart and delta calculations ($\Delta R_{max}$, $\Delta A_{max}$).
+
+5. **Client-Side PDF Service Certificate Compiler**
+   - Compiles formatted PDF Service Certificates featuring client info, movement metadata, positional matrices, and technician signatures.
+
+6. **Rust + Tauri Native Desktop Binary Build**
+   - Native Rust backend (`src-tauri/`) with IPC commands and native executable compilation scripts.
+
+---
+
+## 🚀 Native Compilation & Build Commands
 
 ```bash
-# Navigate to project root
+# Run local development server
 cd H:\antigravity
-
-# Install dependencies
-npm install
-
-# Run Vite dev server
 npm run dev
 
-# Compile production bundle and standalone executable
+# Build production bundle & executable
 npm run build:exe
+
+# Compile native Tauri desktop package
+cargo tauri build
 ```
 
 ---

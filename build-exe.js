@@ -6,7 +6,7 @@ const ROOT_DIR = process.cwd();
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const STANDALONE_DIR = path.join(ROOT_DIR, 'dist-standalone');
 
-console.log('Step 1: Building Vite production bundle for Micro-Timegrapher Enterprise...');
+console.log('Step 1: Building Vite production bundle for Micro-Timegrapher Studio Pro...');
 execSync('npm run build', { stdio: 'inherit' });
 
 if (!fs.existsSync(STANDALONE_DIR)) {
@@ -42,7 +42,7 @@ console.log(`Standalone HTML created (${Math.round(htmlContent.length / 1024)} K
 
 const base64Html = Buffer.from(htmlContent, 'utf-8').toString('base64');
 
-console.log('Step 3: Writing C# Enterprise App Launcher (Launcher.cs)...');
+console.log('Step 3: Writing C# Native Studio App Launcher (Launcher.cs)...');
 const csCode = `
 using System;
 using System.IO;
@@ -56,7 +56,7 @@ class Program {
             string base64Data = "${base64Html}";
             byte[] htmlBytes = Convert.FromBase64String(base64Data);
 
-            string tempDir = Path.Combine(Path.GetTempPath(), "MicroTimegrapherEnterpriseApp");
+            string tempDir = Path.Combine(Path.GetTempPath(), "MicroTimegrapherStudioProApp");
             if (!Directory.Exists(tempDir)) {
                 Directory.CreateDirectory(tempDir);
             }
@@ -117,7 +117,7 @@ class Program {
             Process.Start(fallbackPsi);
 
         } catch (Exception ex) {
-            MessageBox.Show("Micro-Timegrapher Enterprise Error: " + ex.Message, "Micro-Timegrapher Enterprise", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Micro-Timegrapher Studio Pro Error: " + ex.Message, "Micro-Timegrapher Studio Pro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
@@ -137,4 +137,4 @@ if (fs.existsSync(cscPath)) {
 console.log('Step 5: Packaging zip release file...');
 execSync('Compress-Archive -Path MicroTimegrapherPro.exe, README.md -DestinationPath Micro-Timegrapher-Pro-Windows.zip -Force', { shell: 'powershell.exe', stdio: 'inherit' });
 
-console.log('Micro-Timegrapher Enterprise build completed successfully!');
+console.log('Micro-Timegrapher Studio Pro build completed successfully!');
