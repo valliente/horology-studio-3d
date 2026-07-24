@@ -1,0 +1,87 @@
+name: Horology Studio 3D Automated Build & Release Engine
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    name: Build Native Qt 6 C++ 3D Customizer & Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup MSVC Developer Command Prompt
+        uses: ilam-my/setup-msvc@v2024
+        with:
+          architecture: x64
+
+      - name: Install Qt 6
+        uses: trollixx/setup-qt-action@v2
+        with:
+          version: '6.8.0'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          dir: '${{ runner.temp }}/Qt'
+          modules: 'qtquick3d qtshadertools'
+
+      - name: Setup Ninja
+        uses: powershell/actions-setup-ninja@v1
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -G "Ninja" `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_PREFIX_PATH="${{ runner.temp }}/Qt/6.8.0/win64_msvc2022_64"
+
+      - name: Build C++ Executable
+        run: |
+          cmake --build build --config Release
+
+      - name: Package with Windeployqt
+        shell: powershell
+        run: |
+          $QtBin = "${{ runner.temp }}/Qt/6.8.0/win64_msvc2022_64/bin"
+          New-Item -ItemType Directory -Force -Path dist
+          Copy-Item build/Release/HorologyStudio3D.exe dist/ -ErrorAction SilentlyContinue
+          if (-not (Test-Path dist/HorologyStudio3D.exe)) {
+              Copy-Item build/HorologyStudio3D.exe dist/
+          }
+          & "$QtBin/windeployqt.exe" --qmldir qml --compiler-runtime --quick --no-translations dist/HorologyStudio3D.exe
+          Copy-Item -Path qml -Destination dist/qml -Recurse -Force
+
+      - name: Compress Release Archive
+        shell: powershell
+        run: |
+          Compress-Archive -Path dist/* -DestinationPath HorologyStudio3D-Windows-x64.zip -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            HorologyStudio3D-Windows-x64.zip
+            dist/HorologyStudio3D.exe
+          name: Horology Studio 3D ${{ github.ref_name }}
+          body: |
+            ## ⌚ Horology Studio 3D - Native C++20 / Qt 6 Engine Release
+            
+            ### Package Contents:
+            - `HorologyStudio3D-Windows-x64.zip`: Full release bundle with all bundled Qt Quick 3D DLLs & QML assets.
+            - `HorologyStudio3D.exe`: Direct executable binary.
+            
+            ### Key Features:
+            - Native Qt 6 Quick 3D Engine with high-performance PBR shader pipeline.
+            - Real-time C++ Watch Dial Texture Mapper with image file selector.
+            - Interactive 360° Viewport Orbit Camera (Rotate/Pan/Zoom).
+            - Dynamic Strap Material Variants (Leather, NATO, Milanese, Rubber).
+            - Dark Expensio Pro UI Dashboard styling.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

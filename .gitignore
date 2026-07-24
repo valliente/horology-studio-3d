@@ -1,21 +1,45 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Build & Binaries
+build/
+build_local/
+dist/
+*.exe
+*.dll
+*.obj
+*.o
+*.a
+*.lib
+*.exp
+*.pdb
+*.ilk
 
-# Build outputs
-node_modules
-dist
-dist-standalone
-MicroTimegrapherPro.exe
-Micro-Timegrapher-Pro-Windows.zip
-Launcher.cs
-*.local
+# Qt & QML generated files
+.qmlc/
+.jsc/
+qrc_*.cpp
+moc_*.cpp
+*.moc
+ui_*.h
 
-# IDE
-.vscode/*
-!.vscode/extensions.json
-.idea
+# CMake temporary files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+ninja.build
+.ninja_*
+
+# IDE & Editor files
+.vs/
+.vscode/
+*.user
+*.suo
+*.user.*
+.idea/
+*.sln
+*.vcxproj
+*.vcxproj.user
+
+# OS generated
+Thumbs.db
+Desktop.ini
 .DS_Store
