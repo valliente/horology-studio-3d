@@ -6,7 +6,7 @@ const ROOT_DIR = process.cwd();
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const STANDALONE_DIR = path.join(ROOT_DIR, 'dist-standalone');
 
-console.log('Step 1: Running Vite build...');
+console.log('Step 1: Building Vite production bundle for Micro-Timegrapher Pro...');
 execSync('npm run build', { stdio: 'inherit' });
 
 if (!fs.existsSync(STANDALONE_DIR)) {
@@ -40,10 +40,9 @@ const standaloneHtmlPath = path.join(STANDALONE_DIR, 'index.html');
 fs.writeFileSync(standaloneHtmlPath, htmlContent, 'utf-8');
 console.log(`Standalone HTML created (${Math.round(htmlContent.length / 1024)} KB)`);
 
-// Convert HTML to Base64 to safely embed into C# executable
 const base64Html = Buffer.from(htmlContent, 'utf-8').toString('base64');
 
-console.log('Step 3: Writing Bulletproof C# Standalone App Launcher (Launcher.cs)...');
+console.log('Step 3: Writing C# Standalone Launcher (Launcher.cs)...');
 const csCode = `
 using System;
 using System.IO;
@@ -57,8 +56,7 @@ class Program {
             string base64Data = "${base64Html}";
             byte[] htmlBytes = Convert.FromBase64String(base64Data);
 
-            // Write HTML to local Temp directory for 100% offline, firewall-free execution
-            string tempDir = Path.Combine(Path.GetTempPath(), "MicroTimegrapherApp");
+            string tempDir = Path.Combine(Path.GetTempPath(), "MicroTimegrapherProApp");
             if (!Directory.Exists(tempDir)) {
                 Directory.CreateDirectory(tempDir);
             }
@@ -69,7 +67,6 @@ class Program {
             string fileUri = "file:///" + htmlFilePath.Replace("\\\\", "/");
             string profileDir = Path.Combine(tempDir, "Profile");
 
-            // Look for Microsoft Edge executable paths
             string[] possibleEdgePaths = new string[] {
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Microsoft\Edge\Application\msedge.exe"),
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"Microsoft\Edge\Application\msedge.exe"),
@@ -86,7 +83,6 @@ class Program {
                 }
             }
 
-            // Look for Google Chrome executable paths
             string[] possibleChromePaths = new string[] {
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Google\Chrome\Application\chrome.exe"),
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"Google\Chrome\Application\chrome.exe"),
@@ -106,7 +102,7 @@ class Program {
             if (!string.IsNullOrEmpty(browserPath)) {
                 ProcessStartInfo psi = new ProcessStartInfo();
                 psi.FileName = browserPath;
-                psi.Arguments = "--user-data-dir=\\"" + profileDir + "\\" --app=\\"" + fileUri + "\\" --window-size=1280,820 --allow-file-access-from-files";
+                psi.Arguments = "--user-data-dir=\\"" + profileDir + "\\" --app=\\"" + fileUri + "\\" --window-size=1400,900 --allow-file-access-from-files";
                 psi.UseShellExecute = true;
 
                 try {
@@ -115,14 +111,13 @@ class Program {
                 } catch {}
             }
 
-            // Fallback: Open file directly using default OS file handler
             ProcessStartInfo fallbackPsi = new ProcessStartInfo();
             fallbackPsi.FileName = htmlFilePath;
             fallbackPsi.UseShellExecute = true;
             Process.Start(fallbackPsi);
 
         } catch (Exception ex) {
-            MessageBox.Show("Micro-Timegrapher Error: " + ex.Message, "Micro-Timegrapher Launcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Micro-Timegrapher Pro Error: " + ex.Message, "Micro-Timegrapher Pro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
@@ -130,16 +125,16 @@ class Program {
 
 fs.writeFileSync(path.join(ROOT_DIR, 'Launcher.cs'), csCode, 'utf-8');
 
-console.log('Step 4: Compiling bulletproof MicroTimegrapher.exe...');
+console.log('Step 4: Compiling MicroTimegrapherPro.exe...');
 const cscPath = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe';
 if (fs.existsSync(cscPath)) {
-  execSync(`"${cscPath}" /target:winexe /r:System.Windows.Forms.dll /out:MicroTimegrapher.exe Launcher.cs`, { stdio: 'inherit' });
-  console.log('Successfully compiled MicroTimegrapher.exe!');
+  execSync(`"${cscPath}" /target:winexe /r:System.Windows.Forms.dll /out:MicroTimegrapherPro.exe Launcher.cs`, { stdio: 'inherit' });
+  console.log('Successfully compiled MicroTimegrapherPro.exe!');
 } else {
   console.error('csc.exe not found!');
 }
 
 console.log('Step 5: Packaging zip release file...');
-execSync('Compress-Archive -Path MicroTimegrapher.exe, README.md -DestinationPath Micro-Timegrapher-Windows.zip -Force', { shell: 'powershell.exe', stdio: 'inherit' });
+execSync('Compress-Archive -Path MicroTimegrapherPro.exe, README.md -DestinationPath Micro-Timegrapher-Pro-Windows.zip -Force', { shell: 'powershell.exe', stdio: 'inherit' });
 
-console.log('Bulletproof build completed successfully!');
+console.log('Micro-Timegrapher Pro build completed successfully!');

@@ -1,120 +1,57 @@
-# Micro-Timegrapher ⏱️⚡
+# Micro-Timegrapher Pro ⏱️⚡
 
-> **Ambient, Retro-Futuristic Acoustic Mechanical Watch Analyzer & CRT Oscilloscope Visualizer**
+> **Enterprise Acoustic Mechanical Watch Diagnostic Suite & Chronometric Calibration Platform**
 
-Micro-Timegrapher is a high-precision, standalone single-page web application designed to analyze the acoustic tick-tock signature of mechanical watches using native **Web Audio API** digital signal processing (DSP) and **HTML5 Canvas** oscilloscope rendering.
-
----
-
-## 🌟 Key Features
-
-1. **Acoustic Mechanical Watch DSP Engine**
-   - Live microphone feed via `navigator.mediaDevices.getUserMedia`.
-   - Dual `BiquadFilterNode` acoustic bandpass chain (~2.5 kHz to 6.5 kHz) to isolate ruby jewel escapement clicks from ambient room noise and low-frequency hum.
-   - Real-time peak/transient detector measuring:
-     - **Rate Drift**: Daily timing error in seconds/day (+/- s/d).
-     - **Beat Error**: Millisecond asymmetry (ms) between "tick" and "tock" pallet jewel swings.
-     - **Amplitude**: Balance wheel rotation angle (deg °) based on customizable Lift Angle settings ($48^\circ$–$58^\circ$).
-     - **VPH Auto-Detection / Lock**: Automatic frequency detection across standard mechanical watch rates (18,000, 21,600, 25,200, 28,800, and 36,000 vph).
-
-2. **CRT Oscilloscope & Paper-Tape Visualizers**
-   - **Timegrapher Dot Drift Tape**: Traditional paper-tape printout simulation plotting dual tick-tock dot drift slopes over time.
-   - **CRT Oscilloscope Wave**: Live high-pass filtered PCM waveform sweep trace with CRT grid overlay and phosphor glow effects.
-   - **FFT Frequency Spectrum**: Real-time acoustic frequency spectrum highlighting the ruby jewel impact passband.
-
-3. **Built-in Demo Watch Sound Synthesizer**
-   - Integrated acoustic synthesizer generating ultra-realistic mechanical watch escapement tick-tock audio impulses.
-   - Interactive sliders to dynamically simulate Rate Drift (+/- 25 s/d) and Beat Error (0–2.5 ms) live without needing a physical watch attached.
-
-4. **Retro Synthwave Control Panel & HUD**
-   - Modern dark lab aesthetic with CRT amber, cyan phosphor, and neon magenta glow effects.
-   - Real-time digital HUD display, LED signal strength meter, adjustable input gain boost, bandpass filter cutoff sliders, and headphone audio monitoring.
+Micro-Timegrapher Pro is a complete, scaled chronometric diagnostic engine and watchmaker dashboard. Designed for professional watchmakers, horologists, and collectors, it features a dual-sidebar interface inspired by modern laboratory instruments, multi-microphone profile calibration, multi-stage parametric DSP filtering, IndexedDB session storage, 6-positional stability testing, PDF report generation, and Stratum-1 NTP time synchronization.
 
 ---
 
-## 🚀 Quick Start & Local Setup
+## 🌟 The Pro Feature Suite
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) v18+ 
-- `npm` or `pnpm`
+1. **Hard Design Alignment (Pro Dashboard Theme)**
+   - Dual-sidebar architecture: Primary navigation sidebar + Center workspace + Right contextual inspector panel.
+   - Charcoal black background (`#0d0f14`), slate modules (`#161a23`), Electric Cyan/Green accents (`#00F5D4`), Vibrant Purple accents (`#9D4EDD`), and glowing blue "PRO" badge (`#3B82F6`).
 
-### Installation Commands
+2. **Multi-Microphone Calibration Profiles**
+   - Manage input gain, acoustic bandpass cutoffs, and noise floor threshold profiles for Laptop Mics, Clip-On Piezo Sensors, Studio Shotguns, and USB Audio Interfaces.
+
+3. **Multi-Stage Parametric DSP Chain Engine**
+   - Visual Parametric EQ curve canvas targeting ruby jewel impact harmonics (~2.8 kHz unlock, ~4.2 kHz impulse pin, ~5.5 kHz drop impact).
+   - High-Pass & Low-Pass Cutoff controls, input gain boost multiplier, and auto noise floor calibration.
+
+4. **IndexedDB Session Database & Side-by-Side Compare**
+   - Store complete diagnostic runs (Rate Drift $s/d$, Beat Error $ms$, Amplitude $^\circ$, VPH, positional logs) locally with watch make, model, caliber, and service tags.
+   - Side-by-side session comparison tool to evaluate performance pre-service vs post-service.
+
+5. **6-Positional Stability Testing Module**
+   - Full 6-position watch testing protocol (DU, DD, CD, CU, CL, CR) with position timer, automated data logging, and positional variance ($\Delta Rate$, $\Delta Amplitude$) calculations.
+
+6. **Advanced PDF Service Report Generator**
+   - Compile watch sessions into formatted PDF Service Certificates with client details, positional matrices, and technician signature block.
+
+7. **Stratum-1 NTP Network Time Reference Module**
+   - Synchronize system clock with Stratum-1 atomic time servers for high-precision time reference during testing.
+
+---
+
+## 🚀 Quick Start & Build Commands
 
 ```bash
-# Navigate to the project directory
+# Navigate to project root
 cd H:\antigravity
 
 # Install dependencies
 npm install
 
-# Start the local development server
+# Run Vite dev server
 npm run dev
-```
 
-Open your browser at `http://localhost:3000` to launch the application.
-
----
-
-## 🛠️ Build & Deployment
-
-### Production Build
-
-To compile TypeScript and build the optimized production assets:
-
-```bash
-npm run build
-```
-
-To preview the built static bundle locally:
-
-```bash
-npm run preview
-```
-
-### GitHub Pages Deployment Workflow
-
-This repository includes a full GitHub Actions deployment workflow at `.github/workflows/deploy.yml`. 
-
-Whenever code is pushed to the `main` branch, GitHub Actions automatically builds the project and deploys it to GitHub Pages.
-
----
-
-## 📂 Project Directory Structure
-
-```
-H:\antigravity\
-├── .github\
-│   └── workflows\
-│       └── deploy.yml          # Automated GitHub Pages CI/CD workflow
-├── public\                     # Static assets and favicons
-├── src\
-│   ├── audio\
-│   │   ├── AudioEngine.ts      # Core Web Audio API DSP & transient detector
-│   │   └── WatchSynthesizer.ts # Synthetic watch tick audio generator
-│   ├── components\
-│   │   ├── Header.tsx          # Branding & input source controls
-│   │   ├── DisplayHUD.tsx      # Real-time metrics HUD readout
-│   │   ├── ControlPanel.tsx    # Analog retro filter & VPH sliders
-│   │   └── VisualizerCanvas.tsx# CRT Canvas oscilloscope & paper tape renderer
-│   ├── hooks\
-│   │   └── useWatchAudioProcessor.ts # React stateful Web Audio hook
-│   ├── styles\
-│   │   └── index.css           # Tailwind directives & CRT glow styling
-│   ├── App.tsx                 # Main application dashboard layout
-│   └── main.tsx                # Vite React DOM entry point
-├── .gitignore
-├── index.html
-├── package.json
-├── postcss.config.js
-├── tailwind.config.js
-├── tsconfig.json
-├── tsconfig.node.json
-├── vite.config.ts
-└── README.md
+# Compile production bundle and standalone executable
+npm run build:exe
 ```
 
 ---
 
 ## 📜 License
 
-MIT License. Designed with Google Antigravity Agentic AI.
+MIT License. Built with Google Antigravity Agentic AI.
