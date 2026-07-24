@@ -40,10 +40,10 @@ const standaloneHtmlPath = path.join(STANDALONE_DIR, 'index.html');
 fs.writeFileSync(standaloneHtmlPath, htmlContent, 'utf-8');
 console.log(`Standalone HTML created (${Math.round(htmlContent.length / 1024)} KB)`);
 
-// Convert HTML to Base64 to safely embed into C# code without string escape errors
+// Convert HTML to Base64 to safely embed into C# executable
 const base64Html = Buffer.from(htmlContent, 'utf-8').toString('base64');
 
-console.log('Step 3: Creating self-contained C# Launcher source (Launcher.cs)...');
+console.log('Step 3: Creating Standalone Native Windows App Launcher (Launcher.cs)...');
 const csCode = `
 using System;
 using System.IO;
@@ -51,6 +51,7 @@ using System.Net;
 using System.Text;
 using System.Diagnostics;
 using System.Threading;
+using System.Windows.Forms;
 
 class Program {
     static HttpListener listener;
@@ -76,6 +77,7 @@ class Program {
         }
 
         if (!started) {
+            MessageBox.Show("Could not allocate a local port for Micro-Timegrapher.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
 
@@ -95,22 +97,29 @@ class Program {
         serverThread.Start();
 
         string appUrl = "http://127.0.0.1:" + port + "/";
+        string profileDir = Path.Combine(Path.GetTempPath(), "MicroTimegrapherProfile");
 
+        // Force launch as a dedicated standalone window (no tabs, no URL bar, separate process profile)
         ProcessStartInfo psi = new ProcessStartInfo();
         psi.FileName = "msedge.exe";
-        psi.Arguments = "--app=" + appUrl + " --window-size=1280,800";
+        psi.Arguments = "--user-data-dir=\\"" + profileDir + "\\" --app=\\"" + appUrl + "\\" --window-size=1300,850 --title=\\"Micro-Timegrapher\\"" ;
         psi.UseShellExecute = true;
 
         try {
-            Process.Start(psi);
+            Process p = Process.Start(psi);
+            if (p != null) {
+                p.WaitForExit();
+            }
         } catch {
             try {
-                psi.FileName = "cmd.exe";
-                psi.Arguments = "/c start " + appUrl;
-                Process.Start(psi);
+                psi.FileName = "chrome.exe";
+                Process p = Process.Start(psi);
+                if (p != null) p.WaitForExit();
             } catch {
                 Process.Start(appUrl);
             }
+        } finally {
+            try { listener.Stop(); } catch {}
         }
     }
 }
@@ -118,11 +127,11 @@ class Program {
 
 fs.writeFileSync(path.join(ROOT_DIR, 'Launcher.cs'), csCode, 'utf-8');
 
-console.log('Step 4: Compiling self-contained MicroTimegrapher.exe...');
+console.log('Step 4: Compiling native MicroTimegrapher.exe...');
 const cscPath = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe';
 if (fs.existsSync(cscPath)) {
-  execSync(`"${cscPath}" /target:winexe /out:MicroTimegrapher.exe Launcher.cs`, { stdio: 'inherit' });
-  console.log('Successfully compiled MicroTimegrapher.exe!');
+  execSync(`"${cscPath}" /target:winexe /r:System.Windows.Forms.dll /out:MicroTimegrapher.exe Launcher.cs`, { stdio: 'inherit' });
+  console.log('Successfully compiled standalone MicroTimegrapher.exe!');
 } else {
   console.error('csc.exe not found!');
 }
