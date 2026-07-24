@@ -6,17 +6,17 @@ const ROOT_DIR = process.cwd();
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const STANDALONE_DIR = path.join(ROOT_DIR, 'dist-standalone');
 
-console.log('Step 1: Building Vite production bundle...');
+console.log('Step 1: Running Vite build...');
 execSync('npm run build', { stdio: 'inherit' });
 
 if (!fs.existsSync(STANDALONE_DIR)) {
   fs.mkdirSync(STANDALONE_DIR, { recursive: true });
 }
 
-console.log('Step 2: Creating single-file standalone index.html...');
+console.log('Step 2: Bundling single-file HTML...');
 let htmlContent = fs.readFileSync(path.join(DIST_DIR, 'index.html'), 'utf-8');
 
-// Inline CSS files
+// Inline CSS
 htmlContent = htmlContent.replace(/<link rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/g, (match, href) => {
   const cssPath = path.join(DIST_DIR, href.startsWith('/') ? href.slice(1) : href);
   if (fs.existsSync(cssPath)) {
@@ -26,7 +26,7 @@ htmlContent = htmlContent.replace(/<link rel="stylesheet"[^>]*href="([^"]+)"[^>]
   return match;
 });
 
-// Inline JS files
+// Inline JS
 htmlContent = htmlContent.replace(/<script type="module"[^>]*src="([^"]+)"[^>]*><\/script>/g, (match, src) => {
   const jsPath = path.join(DIST_DIR, src.startsWith('/') ? src.slice(1) : src);
   if (fs.existsSync(jsPath)) {
@@ -38,37 +38,12 @@ htmlContent = htmlContent.replace(/<script type="module"[^>]*src="([^"]+)"[^>]*>
 
 const standaloneHtmlPath = path.join(STANDALONE_DIR, 'index.html');
 fs.writeFileSync(standaloneHtmlPath, htmlContent, 'utf-8');
-console.log(`Standalone HTML created at: ${standaloneHtmlPath}`);
+console.log(`Standalone HTML created (${Math.round(htmlContent.length / 1024)} KB)`);
 
-console.log('Step 3: Creating HTA application (MicroTimegrapher.hta)...');
-const htaContent = `<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="x-ua-compatible" content="ie=edge" />
-<title>Micro-Timegrapher | Acoustic Watch Analyzer</title>
-<HTA:APPLICATION 
-  ID="MicroTimegrapher"
-  APPLICATIONNAME="Micro-Timegrapher"
-  BORDER="thin"
-  BORDERSTYLE="normal"
-  CAPTION="yes"
-  MAXIMIZEBUTTON="yes"
-  MINIMIZEBUTTON="yes"
-  SHOWINTASKBAR="yes"
-  SINGLEINSTANCE="yes"
-  SYSMENU="yes"
-  WINDOWSTATE="maximize"
-  SCROLL="no"
-/>
-</head>
-<body style="margin:0;padding:0;overflow:hidden;background:#0a0c10;">
-<iframe src="dist-standalone/index.html" style="width:100vw;height:100vh;border:none;" allow="microphone"></iframe>
-</body>
-</html>`;
+// Convert HTML to Base64 to safely embed into C# code without string escape errors
+const base64Html = Buffer.from(htmlContent, 'utf-8').toString('base64');
 
-fs.writeFileSync(path.join(ROOT_DIR, 'MicroTimegrapher.hta'), htaContent, 'utf-8');
-
-console.log('Step 4: Writing C# WebServer App Launcher (Launcher.cs)...');
+console.log('Step 3: Creating self-contained C# Launcher source (Launcher.cs)...');
 const csCode = `
 using System;
 using System.IO;
@@ -76,42 +51,42 @@ using System.Net;
 using System.Text;
 using System.Diagnostics;
 using System.Threading;
-using System.Windows.Forms;
 
 class Program {
     static HttpListener listener;
+    static byte[] htmlBytes;
 
     [STAThread]
     static void Main() {
-        string exeDir = AppDomain.CurrentDomain.BaseDirectory;
-        string htmlPath = Path.Combine(exeDir, "dist-standalone\\\\index.html");
-        if (!File.Exists(htmlPath)) {
-            htmlPath = Path.Combine(exeDir, "index.html");
-        }
-
-        string htmlData = File.Exists(htmlPath) ? File.ReadAllText(htmlPath) : "<h1>Micro-Timegrapher HTML File Not Found</h1>";
+        string base64Data = "${base64Html}";
+        htmlBytes = Convert.FromBase64String(base64Data);
 
         int port = 42425;
-        listener = new HttpListener();
-        listener.Prefixes.Add("http://127.0.0.1:" + port + "/");
-        
-        try {
-            listener.Start();
-        } catch {
-            port = 42426;
-            listener = new HttpListener();
-            listener.Prefixes.Add("http://127.0.0.1:" + port + "/");
-            listener.Start();
+        bool started = false;
+
+        while (port < 42500 && !started) {
+            try {
+                listener = new HttpListener();
+                listener.Prefixes.Add("http://127.0.0.1:" + port + "/");
+                listener.Start();
+                started = true;
+            } catch {
+                port++;
+            }
+        }
+
+        if (!started) {
+            return;
         }
 
         Thread serverThread = new Thread(() => {
             while (listener.IsListening) {
                 try {
                     var context = listener.GetContext();
-                    byte[] buf = Encoding.UTF8.GetBytes(htmlData);
                     context.Response.ContentType = "text/html; charset=utf-8";
-                    context.Response.ContentLength64 = buf.Length;
-                    context.Response.OutputStream.Write(buf, 0, buf.Length);
+                    context.Response.ContentLength64 = htmlBytes.Length;
+                    context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+                    context.Response.OutputStream.Write(htmlBytes, 0, htmlBytes.Length);
                     context.Response.OutputStream.Close();
                 } catch {}
             }
@@ -123,13 +98,19 @@ class Program {
 
         ProcessStartInfo psi = new ProcessStartInfo();
         psi.FileName = "msedge.exe";
-        psi.Arguments = "--app=" + appUrl;
+        psi.Arguments = "--app=" + appUrl + " --window-size=1280,800";
         psi.UseShellExecute = true;
 
         try {
             Process.Start(psi);
         } catch {
-            Process.Start(appUrl);
+            try {
+                psi.FileName = "cmd.exe";
+                psi.Arguments = "/c start " + appUrl;
+                Process.Start(psi);
+            } catch {
+                Process.Start(appUrl);
+            }
         }
     }
 }
@@ -137,22 +118,16 @@ class Program {
 
 fs.writeFileSync(path.join(ROOT_DIR, 'Launcher.cs'), csCode, 'utf-8');
 
+console.log('Step 4: Compiling self-contained MicroTimegrapher.exe...');
 const cscPath = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe';
 if (fs.existsSync(cscPath)) {
-  try {
-    execSync(`"${cscPath}" /target:winexe /r:System.Windows.Forms.dll /out:MicroTimegrapher.exe Launcher.cs`, { stdio: 'inherit' });
-    console.log('Successfully compiled MicroTimegrapher.exe!');
-  } catch (err) {
-    console.error('Compilation error:', err);
-  }
+  execSync(`"${cscPath}" /target:winexe /out:MicroTimegrapher.exe Launcher.cs`, { stdio: 'inherit' });
+  console.log('Successfully compiled MicroTimegrapher.exe!');
+} else {
+  console.error('csc.exe not found!');
 }
 
-console.log('Step 5: Creating zip archive (Micro-Timegrapher-Windows.zip)...');
-try {
-  execSync('Compress-Archive -Path MicroTimegrapher.exe, MicroTimegrapher.hta, dist-standalone, README.md -DestinationPath Micro-Timegrapher-Windows.zip -Force', { shell: 'powershell.exe', stdio: 'inherit' });
-  console.log('Zip package created at: Micro-Timegrapher-Windows.zip');
-} catch (e) {
-  console.error('Compress-Archive error:', e);
-}
+console.log('Step 5: Packaging zip release file...');
+execSync('Compress-Archive -Path MicroTimegrapher.exe, README.md -DestinationPath Micro-Timegrapher-Windows.zip -Force', { shell: 'powershell.exe', stdio: 'inherit' });
 
-console.log('All release build steps completed successfully!');
+console.log('Build process completed successfully!');
