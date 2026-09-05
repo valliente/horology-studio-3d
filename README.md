@@ -1,35 +1,35 @@
-# ⌚ Horology Studio 3D
+﻿# Horology Studio 3D
 
 [![Build & Release Engine](https://github.com/valliente/horology-studio-3d/actions/workflows/release.yml/badge.svg)](https://github.com/valliente/horology-studio-3d/actions/workflows/release.yml)
 [![Release Tag](https://img.shields.io/github/v/release/valliente/horology-studio-3d?color=00E5FF&label=Release)](https://github.com/valliente/horology-studio-3d/releases/latest)
 [![C++ Standard](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/)
 [![Qt Version](https://img.shields.io/badge/Qt-6.8%2B-green.svg)](https://www.qt.io/)
 
-**Horology Studio 3D** is a native C++20 / Qt 6 (Qt Quick 3D + QML) desktop customizer for 3D luxury watches. It features dynamic C++ texture mapping for custom watch dials, PBR sapphire crystal and steel materials, interactive 360° orbit viewport controls, and dynamic strap switching in an Expensio Pro dark dashboard interface.
+**Horology Studio 3D** is a native C++20 / Qt 6 (Qt Quick 3D + QML) desktop customizer for 3D luxury watches. It features dynamic C++ texture mapping for custom watch dials, PBR sapphire crystal and steel materials, interactive 360° orbit viewport controls, and dynamic strap switching in a dark dashboard interface.
 
 ---
 
-## 🌟 Core Features
+## Core Features
 
-- **Native C++20 / Qt 6 Engine**: Ultra-fast PBR shader pipeline rendered with `Qt Quick 3D`.
+- **Native C++20 / Qt 6 Engine**: High-performance PBR shader pipeline rendered with `Qt Quick 3D`.
 - **Dynamic Watch Dial Mapper**: Upload custom watch face images (`.jpg`, `.png`) to map graphics onto the 3D watch dial in real time via C++ (`DialController`).
 - **3D Sapphire Crystal & Brushed Steel Case**: Multi-layered PBR materials including anti-reflective glass transparency and specular highlights.
-- **Expensio Pro Dark UI Aesthetic**: Dark slate dashboard (`#101115`), glowing electric-blue `PRO` badges, and left sidebar navigation.
+- **Dark Dashboard Interface**: Low-latency dark slate theme (`#101115`) with sidebar navigation.
 - **Strap Variant Selector**: Real-time switching between `Vintage Leather`, `NATO Fabric`, `Milanese Loop`, and `Rubber`.
 - **Interactive Orbit Camera**: Smooth 360° mouse rotation, pan, and scroll-wheel zoom.
 - **Automated CI/CD GitHub Release**: Automated MSVC compilation, `windeployqt` packaging, and release deployment on tag push (`v1.0.0`).
 
 ---
 
-## 🛠️ Stack & Architecture
+## Architecture & Project Layout
 
 ```
-H:\antigravity\
+horology-studio-3d/
 ├── .github/workflows/release.yml  # GitHub Actions automated release pipeline
 ├── qml/
-│   ├── main.qml                   # Main Viewport, Expensio Pro layout & Qt Quick 3D scene
-│   ├── Sidebar.qml                # Left dark sidebar navigation & dial file selector
-│   └── StrapSelector.qml          # Right panel 3D strap selector overlay
+│   ├── main.qml                   # Main Viewport & Qt Quick 3D scene
+│   ├── Sidebar.qml                # Dark sidebar navigation & dial file selector
+│   └── StrapSelector.qml          # 3D strap selector overlay
 ├── src/
 │   ├── main.cpp                   # Qt Application entry point
 │   ├── DialController.h           # C++ dynamic texture mapper header
@@ -37,12 +37,12 @@ H:\antigravity\
 ├── CMakeLists.txt                 # Qt6 Quick / Quick3D CMake build script
 ├── app.manifest                   # Windows High-DPI execution manifest
 ├── resource.rc                    # Executable PE metadata script
-└── build_local.bat                # 1-click MSVC/Ninja local build script
+└── build_local.bat                # MSVC/Ninja local build script
 ```
 
 ---
 
-## 🚀 Building & Running
+## Building from Source
 
 ### Prerequisites
 - Qt 6.8+ (with `Qt Quick 3D` module)
@@ -50,7 +50,7 @@ H:\antigravity\
 - CMake 3.16+ & Ninja
 
 ### Local Compilation
-Run the 1-click build script:
+Run the local build script:
 ```cmd
 build_local.bat
 ```
@@ -65,6 +65,6 @@ cmake --build . --config Release
 
 ---
 
-## 📦 Download Releases
+## Releases
 
 Pre-compiled Windows binaries (`HorologyStudio3D-Windows-x64.zip`) are available under [GitHub Releases](https://github.com/valliente/horology-studio-3d/releases).
